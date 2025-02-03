@@ -36,7 +36,11 @@
                     </div>
                 </form>
                 <hr>
-                <p class="text-center">Belum punya akun? <a href="registrasi">Register</a> sekarang!</p>
+                <p class="text-center">
+    Belum punya akun? <a href="registrasi">Register</a> sekarang! <br>
+    <a href="{{ route('forgot-password') }}">Lupa Password?</a>
+</p>
+
             </div>
         </div>
     </div>
