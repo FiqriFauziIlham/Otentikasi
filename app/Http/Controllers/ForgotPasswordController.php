@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Mail\ResetPasswordMail;
 
 class ForgotPasswordController extends Controller
 {
@@ -16,24 +17,23 @@ class ForgotPasswordController extends Controller
     }
 
     public function sendResetCode(Request $request)
-{
-    $request->validate(['email' => 'required|email|exists:users,email']);
-
-    $email = $request->email;
-    $token = Str::random(6);
-
-    DB::table('password_reset_tokens')->updateOrInsert(
-        ['email' => $email],
-        ['token' => $token, 'created_at' => now()]
-    );
-
-    Mail::raw("Kode reset password Anda adalah: $token", function ($message) use ($email) {
-        $message->to($email)->subject('Reset Password');
-    });
-
-    return response()->json(['status' => 'Kode reset telah dikirim ke email Anda.']);
-}
-
+    {
+        $request->validate(['email' => 'required|email|exists:users,email']);
+    
+        $email = $request->email;
+        $token = strtoupper(substr(str_shuffle('0123456789'), 0, 6)); // Hanya angka & capslock
+    
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            ['token' => $token, 'created_at' => now()]
+        );
+    
+        // Gunakan queue untuk mengirim email dengan template
+        Mail::to($email)->queue(new ResetPasswordMail($token));
+    
+        return response()->json(['status' => 'Kode reset telah dikirim ke email Anda.']);
+    }
+    
 
 public function verifyResetCode(Request $request)
 {
